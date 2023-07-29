@@ -1,0 +1,6 @@
+matplotlib
+openpyxl
+pandas
+requests
+seaborn
+scikit-learn
