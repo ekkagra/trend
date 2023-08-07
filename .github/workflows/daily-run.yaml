@@ -38,6 +38,3 @@ jobs:
         with:
           commit_message: "Auto-commit changes for trend data"
           file_pattern: "./data/*.xlsx ./data/*.jpg"
-          commit_user_name: ekkagra
-          commit_user_email: ekkagra@gmail.com
-          commit_author: ekkagra <ekkagra@users.noreply.github.com>
