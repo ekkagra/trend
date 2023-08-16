@@ -38,3 +38,4 @@ jobs:
         with:
           commit_message: "Auto-commit changes for trend data"
           file_pattern: "./data/*.xlsx ./data/*.jpg"
+          commit_author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
