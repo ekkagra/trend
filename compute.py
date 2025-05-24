@@ -6,10 +6,14 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 import requests
 from datetime import datetime, timedelta
+import logging
 
 DAYS_LAST_YEAR = 260
 DAYS_LAST_MONTH = 21
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)-8s - %(message)s', datefmt='%y-%m-%d %H:%M:%S')
+
+log = logging.getLogger(__name__)
 
 def fetch_last_date(file_path) -> datetime:
     df = pd.read_excel(file_path)
@@ -30,12 +34,13 @@ def get_ohlc_data(base_url: str, from_date: datetime, file_path: str) -> str:
                 with open(csv_path, "w") as f:
                     f.write(resp.content.decode("utf-8"))
             except Exception as e:
-                print(f"Error occurred while fetching data for {current_date}")
-                print(e)
+                log.exception(f"Error occurred while fetching data for {current_date}")
                 current_date = current_date + timedelta(days=1)
                 continue
 
             if resp.status_code == 200:
+                log.info(f"http get success for {current_date}")
+
                 current_date = current_date + timedelta(days=1)
                 df = pd.read_csv(csv_path)
                 df_all = pd.concat([df_all, df.loc[df['Index Name']=="Nifty 50", ['Index Date',
@@ -45,15 +50,15 @@ def get_ohlc_data(base_url: str, from_date: datetime, file_path: str) -> str:
                                                       'Closing Index Value']]],
                                     ignore_index= True)
             else:
-                print(f"Status code not 200 while fetching data from {current_date}")
+                log.warning(f"Status code not 200 date={current_date}, status_code={resp.status_code} content={resp.content}")
                 current_date = current_date + timedelta(days=1)
                 continue
         else:
-            print(f"Skipping as weekday is {current_date.weekday()}")
+            log.info(f"Skipping as weekday is {current_date.weekday()}")
             current_date = current_date + timedelta(days=1)
 
     if len(df_all) > 0:
-        print(f"{len(df_all)} records found")
+        log.info(f"{len(df_all)} records found")
         df_all.rename(columns={"Index Date": "Date",
                                "Open Index Value": "Open",
                                "High Index Value": "High",
@@ -139,19 +144,22 @@ def nifty50_trend(base_path):
     base_url = "https://archives.nseindia.com/content/indices/ind_close_all_"
     file_path = path.join(base_path, data_file)
     last_date = fetch_last_date(file_path)
-    print("Last update date in excel: ", last_date)
+
+    log.info(f"Last update date in excel: {last_date}")
     output_file = get_ohlc_data(base_url=base_url, from_date=last_date, file_path=file_path)
 
     if output_file:
-        print(f"New data stored in {output_file}")
+        log.info(f"New data stored in {output_file}")
         data_last_date = fetch_last_date(output_file).strftime("%Y-%m-%d")
         generate_plots(file_path=output_file, data_last_date=data_last_date)
     else:
-        print("No new data found")
+        log.info("No new data found")
 
 
 def main():
+    log.info("Starting")
     nifty50_trend(base_path="data/nifty50/")
+    log.info("Finished")
 
 
 if __name__ == "__main__":
