@@ -25,12 +25,22 @@ def get_ohlc_data(base_url: str, from_date: datetime, file_path: str) -> str:
     current_date = from_date + timedelta(days=1)
     today = datetime.now()
     df_all = pd.DataFrame()
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-IN,en;q=0.9',
+        'Referer': 'https://www.nseindia.com/all-reports',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+    }
+
     while current_date < today:
         date_str = current_date.strftime('%d%m%Y')
         csv_path = path.join(path.dirname(file_path), f"{date_str}.csv")
         if current_date.weekday() not in [5, 6]:
             try:
-                resp = requests.get(f"{base_url}{date_str}.csv")
+                resp = requests.get(f"{base_url}{date_str}.csv", headers=headers)
                 with open(csv_path, "w") as f:
                     f.write(resp.content.decode("utf-8"))
             except Exception as e:
