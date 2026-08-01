@@ -10,7 +10,7 @@ on:
 
 jobs:
   run:
-    runs-on: [self-hosted, windows-latest]
+    runs-on: [self-hosted, Windows]
     permissions:
       contents: write
       issues: write
